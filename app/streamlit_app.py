@@ -3,7 +3,6 @@ import tensorflow as tf
 from tensorflow.keras import layers
 import numpy as np
 import json
-import plotly.graph_objects as go
 import os
 
 # --- 1. Custom Layer ---
@@ -70,37 +69,27 @@ def load_sample_data():
             return json.load(f)
     return []
 
-def plot_attention_weights(sequence, weights, max_len, title):
+def render_attention_html(sequence, weights, max_len, title):
     # weights shape is (1, max_len, 1), we just need the 1D array up to the actual sequence length
     actual_len = min(len(sequence), max_len)
     w_1d = weights[0, :actual_len, 0]
     
-    chars = list(sequence[:actual_len])
+    # Normalize weights so the max weight has 1.0 opacity, making it easier to see
+    max_w = np.max(w_1d)
+    if max_w > 0:
+        w_1d = w_1d / max_w
+        
+    html = f"<h4>{title}</h4>"
+    html += "<div style='font-family: monospace; font-size: 14px; word-wrap: break-word; line-height: 1.8; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background-color: #f8f9fa; max-height: 400px; overflow-y: auto;'>"
     
-    fig = go.Figure(data=[
-        go.Bar(
-            x=list(range(actual_len)), 
-            y=w_1d,
-            text=chars,
-            textposition='auto',
-            hoverinfo='text+y',
-            hovertemplate='Char: %{text}<br>Weight: %{y:.4f}<extra></extra>'
-        )
-    ])
-    fig.update_layout(
-        title=title,
-        xaxis_title="Position in Sequence",
-        yaxis_title="Attention Weight",
-        xaxis=dict(
-            tickmode='array',
-            tickvals=list(range(actual_len)),
-            ticktext=chars,
-            tickangle=0 if actual_len < 30 else 90
-        ),
-        margin=dict(l=20, r=20, t=40, b=20),
-        height=300
-    )
-    return fig
+    for char, weight in zip(sequence[:actual_len], w_1d):
+        # Calculate background color intensity based on weight (using a heatmap color like tomato/red)
+        # We use an rgba value where the alpha channel is the normalized weight
+        alpha = float(weight)
+        html += f"<span style='background-color: rgba(255, 99, 71, {alpha}); padding: 0px 1px; border-radius: 2px;' title='Normalized Weight: {weight:.4f}'>{char}</span>"
+    
+    html += "</div>"
+    return html
 
 # --- 4. Main Streamlit UI ---
 st.set_page_config(page_title="DeepDTA + Attention", layout="wide")
@@ -191,7 +180,7 @@ if st.button("Predict Binding Affinity", type="primary"):
             col1, col2 = st.columns(2)
             
             with col1:
-                st.plotly_chart(plot_attention_weights(smiles_input, drug_weights, SMILES_MAXLEN, "Drug (SMILES) Attention"), use_container_width=True)
+                st.markdown(render_attention_html(smiles_input, drug_weights, SMILES_MAXLEN, "Drug (SMILES) Attention"), unsafe_allow_html=True)
             
             with col2:
-                st.plotly_chart(plot_attention_weights(protein_input, protein_weights, PROTEIN_MAXLEN, "Protein Attention"), use_container_width=True)
+                st.markdown(render_attention_html(protein_input, protein_weights, PROTEIN_MAXLEN, "Protein Attention"), unsafe_allow_html=True)
