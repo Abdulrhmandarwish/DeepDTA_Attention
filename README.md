@@ -1,6 +1,6 @@
 # DeepDTA Reproduction with Attention Mechanism
 
-**Live Demo (Streamlit):** [Insert Live App URL Here]
+**Live Demo (Streamlit):** https://deepdtaattention-ba73wl9mps8fmzdik6hphk.streamlit.app/
 
 **Drug-Target Binding Affinity Prediction — Davis & KIBA Datasets**
 
@@ -8,7 +8,13 @@
 
 This project reproduces **DeepDTA** (Öztürk, Özgür & Ozkirimli, 2018, *Bioinformatics*), a deep learning model that predicts binding affinity between a drug and a protein target directly from their sequence representations — no 3D structure required. It extends the original architecture with a custom **attention pooling layer**, adding interpretability that the original paper does not provide.
 
-- **Paper:** [arXiv:1801.10193](https://arxiv.org/abs/1801.10193)
+- **Paper:** [arXiv:1801.10193
+        
+        
+        
+        ](https://arxiv.org/abs/1801.10193
+        
+        )
 - **Original code/data:** https://github.com/hkmztrk/DeepDTA
 - **Datasets:** Davis (68 drugs × 442 proteins, kinase inhibitors) and KIBA (2,111 drugs × 229 proteins)
 - **Framework:** TensorFlow / Keras
